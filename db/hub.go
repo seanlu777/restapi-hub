@@ -1,7 +1,11 @@
 // db/hub.go
 package db
 
-// GetHubs retrieves all hubs from the database
+import (
+	"gorm.io/gorm/clause"
+)
+
+// retrieves all hubs from the database
 func GetAllHubs() ([]Hubs, error) {
 	var hubs []Hubs
 
@@ -11,7 +15,7 @@ func GetAllHubs() ([]Hubs, error) {
 	return hubs, nil
 }
 
-// GetHub retrieves a hub by its GatewayID
+// retrieves a hub by its GatewayID
 func GetHub(gatewayID string) (*Hubs, error) {
 	var hub Hubs
 
@@ -21,15 +25,20 @@ func GetHub(gatewayID string) (*Hubs, error) {
 	return &hub, nil
 }
 
-// CreateHub creates a new hub in the database
-func CreateHub(hub *Hubs) error {
-	if result := DB.Create(hub); result.Error != nil {
-		return result.Error
-	}
-	return nil
+// creates a new hub in the database
+func CreateData(data *Hubs) error {
+
+	result := DB.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "gateway_id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"lte_rssi", "wifi_rssi", "satellite_qty", "lng", "lat", "timestamp"}),
+	}).Create(data)
+
+	return result.Error
 }
-func CreateRecord(record *Records) error {
-	if result := DB.Create(record); result.Error != nil {
+
+// create hub history
+func CreateHubHistory(data *HubHistory) error {
+	if result := DB.Create(data); result.Error != nil {
 		return result.Error
 	}
 	return nil

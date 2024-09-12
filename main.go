@@ -14,28 +14,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-/*
-Records struct {
-	DeviceID   string
-	Name       string
-	RecordTime int
-	RawData    string
-}
-*/
-
-/*
-Hub struct {
-	GatewayID    string
-	LteRssi      int
-	WifiRssi     int
-	SatelliteQty int
-	Lng          float32
-	Lat          float32
-	Timestamppb  int
-	Records      []Records
-}
-*/
-
 func main() {
 	dsn := "host=localhost user=test1 password=test123 dbname=tydenbrooks_hub"
 	err := db.Initialize(dsn)
@@ -97,31 +75,41 @@ func getHub(c *gin.Context) {
 // Handler function to create a new hub and record in the database
 func pushRecord(c *gin.Context) {
 
-	var data db.Data
+	var data db.Hubs
 
 	if err := c.BindJSON(&data); err != nil {
 		fmt.Printf("BindJSON Error: %v\n", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	for i := range data.Records {
+		data.Records[i].GatewayID = data.GatewayID
+	}
 	fmt.Printf("data: %+v\n", data)
 	fmt.Println()
 
-	// tx := db.DB.Begin()
-	// if err := db.CreateHub(&Hub); err != nil {
-	// 	tx.Rollback()
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	// 	return
-	// }
-	// for i := range data.Records {
-	// 	data.Records[i].GatewayID = data.Hub.GatewayID
-	// }
+	history := db.HubHistory{
+		GatewayID:    data.GatewayID,
+		LteRssi:      data.LteRssi,
+		WifiRssi:     data.WifiRssi,
+		SatelliteQty: data.SatelliteQty,
+		Lng:          data.Lng,
+		Lat:          data.Lat,
+		Timestamp:    data.Timestamp,
+	}
 
-	// if err := tx.Create(&data.Records).Error; err != nil {
-	// 	tx.Rollback()
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	// 	return
-	// }
+	if err := db.CreateHubHistory(&history); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	tx := db.DB.Begin()
+	if err := db.CreateData(&data); err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	tx.Commit()
 
 	c.JSON(http.StatusCreated, data)
 }

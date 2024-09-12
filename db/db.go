@@ -18,14 +18,10 @@ func Initialize(dsn string) error {
 		return fmt.Errorf("failed to connect to db: %v", err)
 	}
 
-	err = DB.AutoMigrate(&Hubs{})
+	err = DB.AutoMigrate(&Hubs{}, Records{}, HubHistory{})
 	if err != nil {
 		return fmt.Errorf("failed to migrate db: %v", err)
 	}
 
-	err = DB.AutoMigrate(&Records{})
-	if err != nil {
-		return fmt.Errorf("failed to migrate db: %v", err)
-	}
 	return nil
 }
