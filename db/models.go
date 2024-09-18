@@ -22,7 +22,7 @@ type Records struct {
 	GatewayID  string `gorm:"size: 20; not null; index" json:"GatewayID"` // fk: GatewayID string
 	DeviceID   string `gorm:"size: 20; not null" json:"DeviceID"`
 	Name       string `gorm:"size: 20; not null" json:"Name"`
-	RecordTime string `gorm:"RecordTime; not null" json:"RecordTime"`
+	RecordTime int    `gorm:"RecordTime; not null" json:"RecordTime"`
 	RawData    string `json:"RawData"`
 }
 
@@ -36,4 +36,42 @@ type HubHistory struct {
 	Lng          float32 `json:"Lng"`
 	Lat          float32 `json:"Lat"`
 	Timestamp    int     `json:"Timestamp"`
+}
+
+// Define A2TB
+type A2TB struct {
+	gorm.Model
+	GatewayID    string  `gorm:"size: 20" json:"GatewayID"`
+	DeviceID     string  `json:"DeviceID"`
+	Temperature  float32 `json:"Temperature"`
+	Pressure     float32 `json:"Pressure"`
+	TagStatus    string  `json:"TagStatus"`
+	BatteryLevel int     `json:"BatteryLevel"`
+	TImestamp    int     `json:"Timestemp"`
+	TXPower      int     `json:"TXPower"`
+	ReserveData  string  `json:"ReserveData"`
+}
+
+// Define B2
+type B2 struct {
+	gorm.Model
+	GatewayID    string  `gorm:"size: 20" json:"GatewayID"`
+	DeviceID     string  `json:"DeviceID"`
+	Temperature  float32 `json:"Temperature"`
+	AsixX        float32 `json:"AsixX"`
+	AsixY        float32 `json:"AsixY"`
+	AsixZ        float32 `json:"AsixZ"`
+	BatteryLevel int     `json:"BatteryLevel"`
+}
+
+// Define T8
+type T8 struct {
+	gorm.Model
+	GatewayID    string  `gorm:"size: 20" json:"GatewayID"`
+	DeviceID     string  `json:"DeviceID"`
+	Temperature  float32 `json:"Temperature"`
+	AsixX        float32 `json:"AsixX"`
+	AsixY        float32 `json:"AsixY"`
+	AsixZ        float32 `json:"AsixZ"`
+	BatteryLevel int     `json:"BatteryLevel"`
 }
