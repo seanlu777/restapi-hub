@@ -5,6 +5,8 @@ import (
 
 	"gin-rest-api/db"
 
+	"gin-rest-api/convertFactory"
+
 	"gorm.io/gorm"
 
 	"net/http"
@@ -82,9 +84,12 @@ func pushRecord(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
 	for i := range data.Records {
 		data.Records[i].GatewayID = data.GatewayID
+
 	}
+	convertFactory.ConvertDeviceData(data.Records)
 	fmt.Printf("data: %+v\n", data)
 	fmt.Println()
 
@@ -98,14 +103,13 @@ func pushRecord(c *gin.Context) {
 		Timestamp:    data.Timestamp,
 	}
 
-	if err := db.CreateHubHistory(&history); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
 	tx := db.DB.Begin()
-	if err := db.CreateData(&data); err != nil {
-		tx.Rollback()
+	// if err := db.CreateData(&data); err != nil {
+	// 	tx.Rollback()
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// 	return
+	// }
+	if err := db.CreateHubHistory(&history); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

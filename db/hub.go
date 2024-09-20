@@ -43,3 +43,19 @@ func CreateHubHistory(data *HubHistory) error {
 	}
 	return nil
 }
+
+// create A2TB
+func CreateA2TB(data *A2TB) error {
+	if result := DB.Create(data); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+// create R2B2
+func CreateR2B2(data *R2B2) error {
+	if result := DB.Create(data); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}

@@ -1,26 +1,33 @@
 // db/models.go
 package db
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 // Define the Hubs struct with GORM tags
 type Hubs struct {
 	gorm.Model
-	GatewayID    string    `gorm:"unique; size:20; not null; index" json:"GatewayID"`
-	LteRssi      int       `json:"LteRssi"`
-	WifiRssi     int       `json:"WifiRssi"`
-	SatelliteQty int       `json:"SatelliteQty"`
-	Lng          float32   `json:"Lng"`
-	Lat          float32   `json:"Lat"`
-	Timestamp    int       `json:"Timestamp"`
-	Records      []Records `gorm:"foreignKey:GatewayID;references:GatewayID;constraint:OnDelete:CASCADE" json:"Records"`
+	GatewayID      string    `gorm:"unique; size:20; not null; index" json:"GatewayID"`
+	LteRssi        int       `json:"LteRssi"`
+	WifiRssi       int       `json:"WifiRssi"`
+	SatelliteQty   int       `json:"SatelliteQty"`
+	Lng            float32   `json:"Lng"`
+	Lat            float32   `json:"Lat"`
+	Timestamp      int       `json:"Timestamp"`
+	SensorG        []float32 `json:"SensorG"`
+	MovementState  int       `json:"MovementState"`
+	Light          int       `json:"Light"`
+	BatteryLevel   int       `json:"BatteryLevel"`
+	ChargingStatus int       `json:"ChargingStatus"`
+	Records        []Records `gorm:"foreignKey:GatewayID;references:GatewayID;constraint:OnDelete:CASCADE" json:"Records"`
 }
 
 // Define the Records struct with GORM tags
 type Records struct {
 	gorm.Model
-	GatewayID  string `gorm:"size: 20; not null; index" json:"GatewayID"` // fk: GatewayID string
-	DeviceID   string `gorm:"size: 20; not null" json:"DeviceID"`
+	GatewayID string `gorm:"size: 20; not null; index" json:"GatewayID"` // fk: GatewayID string
+	// DeviceID   string `gorm:"size: 20; not null" json:"DeviceID"`
 	Name       string `gorm:"size: 20; not null" json:"Name"`
 	RecordTime int    `gorm:"RecordTime; not null" json:"RecordTime"`
 	RawData    string `json:"RawData"`
@@ -29,18 +36,24 @@ type Records struct {
 // Define the hub history for tracking paths
 type HubHistory struct {
 	gorm.Model
-	GatewayID    string  `gorm:"size: 20; not null; index" json:"GatewayID"`
-	LteRssi      int     `json:"LteRssi"`
-	WifiRssi     int     `json:"WifiRssi"`
-	SatelliteQty int     `json:"SatelliteQty"`
-	Lng          float32 `json:"Lng"`
-	Lat          float32 `json:"Lat"`
-	Timestamp    int     `json:"Timestamp"`
+	GatewayID      string  `gorm:"size: 20; not null; index" json:"GatewayID"`
+	LteRssi        int     `json:"LteRssi"`
+	WifiRssi       int     `json:"WifiRssi"`
+	SatelliteQty   int     `json:"SatelliteQty"`
+	Lng            float32 `json:"Lng"`
+	Lat            float32 `json:"Lat"`
+	Timestamp      int     `json:"Timestamp"`
+	SensorG        string  `json:"SensorG"`
+	MovementState  int     `json:"MovementState"`
+	Light          int     `json:"Light"`
+	BatteryLevel   int     `json:"BatteryLevel"`
+	ChargingStatus int     `json:"ChargingStatus"`
 }
 
 // Define A2TB
 type A2TB struct {
 	gorm.Model
+	RecordTime   int     `gorm:"RecordTime; not null" json:"RecordTime"`
 	GatewayID    string  `gorm:"size: 20" json:"GatewayID"`
 	DeviceID     string  `json:"DeviceID"`
 	Temperature  float32 `json:"Temperature"`
@@ -52,9 +65,10 @@ type A2TB struct {
 	ReserveData  string  `json:"ReserveData"`
 }
 
-// Define B2
-type B2 struct {
+// Define R2B2
+type R2B2 struct {
 	gorm.Model
+	RecordTime   int     `gorm:"RecordTime; not null" json:"RecordTime"`
 	GatewayID    string  `gorm:"size: 20" json:"GatewayID"`
 	DeviceID     string  `json:"DeviceID"`
 	Temperature  float32 `json:"Temperature"`
@@ -65,8 +79,9 @@ type B2 struct {
 }
 
 // Define T8
-type T8 struct {
+type R2T8 struct {
 	gorm.Model
+	RecordTime   int     `gorm:"RecordTime; not null" json:"RecordTime"`
 	GatewayID    string  `gorm:"size: 20" json:"GatewayID"`
 	DeviceID     string  `json:"DeviceID"`
 	Temperature  float32 `json:"Temperature"`
