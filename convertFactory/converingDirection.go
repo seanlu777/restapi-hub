@@ -13,9 +13,10 @@ func ConvertDeviceData(hub db.Hubs) {
 		switch name {
 		case "A2TB":
 			fmt.Println("I'm A2TB; raw: ", records[i].RawData)
-			ConvertA2TB(records[i].RawData, hub.GatewayID)
+			ConvertA2TB(records[i].RawData, records[i].RecordTime, hub.GatewayID)
 		case "R2B2":
 			fmt.Println("I'm R2B2; raw: ", records[i].RawData)
+			ConvertR2B2(records[i].RawData, records[i].RecordTime, hub.GatewayID)
 		case "R2T8":
 			fmt.Println("I'm R2T8; raw: ", records[i].RawData)
 		}

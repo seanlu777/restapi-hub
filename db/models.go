@@ -56,7 +56,7 @@ type A2TB struct {
 	Pressure     float32 `json:"Pressure"`
 	TagStatus    string  `json:"TagStatus"`
 	BatteryLevel int     `json:"BatteryLevel"`
-	TImestamp    int     `json:"Timestemp"`
+	Timestamp    int     `json:"Timestemp"`
 	TXPower      int     `json:"TXPower"`
 	ReserveData  string  `json:"ReserveData"`
 }
