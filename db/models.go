@@ -24,7 +24,6 @@ type Hubs struct {
 
 // Define the Records struct with GORM tags
 type Records struct {
-	GatewayID  string `json:"GatewayID"`
 	Name       string `gorm:"size: 20; not null" json:"Name"`
 	RecordTime int    `gorm:"RecordTime; not null" json:"RecordTime"`
 	RawData    string `json:"RawData"`
