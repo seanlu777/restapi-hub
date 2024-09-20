@@ -7,7 +7,6 @@ import (
 
 // Define the Hubs struct with GORM tags
 type Hubs struct {
-	gorm.Model
 	GatewayID      string    `gorm:"unique; size:20; not null; index" json:"GatewayID"`
 	LteRssi        int       `json:"LteRssi"`
 	WifiRssi       int       `json:"WifiRssi"`
@@ -20,14 +19,12 @@ type Hubs struct {
 	Light          int       `json:"Light"`
 	BatteryLevel   int       `json:"BatteryLevel"`
 	ChargingStatus int       `json:"ChargingStatus"`
-	Records        []Records `gorm:"foreignKey:GatewayID;references:GatewayID;constraint:OnDelete:CASCADE" json:"Records"`
+	Records        []Records `json:"Records"`
 }
 
 // Define the Records struct with GORM tags
 type Records struct {
-	gorm.Model
-	GatewayID string `gorm:"size: 20; not null; index" json:"GatewayID"` // fk: GatewayID string
-	// DeviceID   string `gorm:"size: 20; not null" json:"DeviceID"`
+	GatewayID  string `json:"GatewayID"`
 	Name       string `gorm:"size: 20; not null" json:"Name"`
 	RecordTime int    `gorm:"RecordTime; not null" json:"RecordTime"`
 	RawData    string `json:"RawData"`

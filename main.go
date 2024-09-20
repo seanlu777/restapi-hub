@@ -84,6 +84,7 @@ func pushRecord(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	c.JSON(http.StatusCreated, data)
 
 	for i := range data.Records {
 		data.Records[i].GatewayID = data.GatewayID
@@ -115,5 +116,4 @@ func pushRecord(c *gin.Context) {
 	}
 	tx.Commit()
 
-	c.JSON(http.StatusCreated, data)
 }
