@@ -1,11 +1,44 @@
 package convertFactory
 
 import (
+	"encoding/json"
 	"fmt"
 	"gin-rest-api/db"
+	"log"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-func ConvertDeviceData(hub db.Hubs) {
+func ConvertDeviceData(c *gin.Context, hub db.Hubs) {
+
+	// Create gateway history
+	history := db.HubHistory{
+		GatewayID:     hub.GatewayID,
+		LteRssi:       hub.LteRssi,
+		WifiRssi:      hub.WifiRssi,
+		SatelliteQty:  hub.SatelliteQty,
+		Lng:           hub.Lng,
+		Lat:           hub.Lat,
+		Timestamp:     hub.Timestamp,
+		MovementState: hub.MovementState,
+		Light:         hub.Light,
+		BatteryLevel:  hub.BatteryLevel,
+	}
+
+	sensorGJson, err := json.Marshal(hub.SensorG)
+	if err != nil {
+		log.Println("Error marshaling SensorG:", err)
+		return
+	}
+	history.SensorG = sensorGJson
+	tx := db.DB.Begin()
+
+	if err := db.CreateHubHistory(&history); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	tx.Commit()
 
 	records := hub.Records
 	for i := range records {
@@ -19,6 +52,7 @@ func ConvertDeviceData(hub db.Hubs) {
 			ConvertR2B2(records[i].RawData, records[i].RecordTime, hub.GatewayID)
 		case "R2T8":
 			fmt.Println("I'm R2T8; raw: ", records[i].RawData)
+			ConvertR2T8(records[i].RawData, records[i].RecordTime, hub.GatewayID)
 		}
 	}
 }

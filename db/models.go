@@ -5,16 +5,35 @@ import (
 	"gorm.io/gorm"
 )
 
-// Define the Hubs struct with GORM tags
+// Define the shipments table
+
+type Shipment struct {
+	gorm.Model
+	ShipmentID  string   `gorm:"unique; size:20; not null; index" json:"ShipmentID"`
+	CreatorName string   `json:"CreatorName"`
+	Destination []string `gorm:"type:json" json:"Destination"` // Country, City, Area, Address
+	GatewayType string   `json:"GatewayType"`
+	GatewayID   string   `json:"GatewayID"`
+	Device      []Device `json:"Device"`
+}
+
+// Define the device struct
+type Device struct {
+	ShipmentID string `gorm:"unique; size:20; not null; index" json:"ShipmentID"`
+	DeviceType string `json:"DeviceType"`
+	DeviceID   string `json:"DeviceID"`
+}
+
+// Define the hubs
 type Hubs struct {
-	GatewayID      string    `gorm:"unique; size:20; not null; index" json:"GatewayID"`
+	GatewayID      string    `json:"GatewayID"`
 	LteRssi        int       `json:"LteRssi"`
 	WifiRssi       int       `json:"WifiRssi"`
 	SatelliteQty   int       `json:"SatelliteQty"`
 	Lng            float32   `json:"Lng"`
 	Lat            float32   `json:"Lat"`
 	Timestamp      int       `json:"Timestamp"`
-	SensorG        []float32 `json:"SensorG"`
+	SensorG        []float32 `gorm:"type:json" json:"SensorG"`
 	MovementState  int       `json:"MovementState"`
 	Light          int       `json:"Light"`
 	BatteryLevel   int       `json:"BatteryLevel"`
@@ -22,7 +41,7 @@ type Hubs struct {
 	Records        []Records `json:"Records"`
 }
 
-// Define the Records struct with GORM tags
+// Define the records
 type Records struct {
 	Name       string `gorm:"size: 20; not null" json:"Name"`
 	RecordTime int    `gorm:"RecordTime; not null" json:"RecordTime"`
@@ -39,7 +58,7 @@ type HubHistory struct {
 	Lng            float32 `json:"Lng"`
 	Lat            float32 `json:"Lat"`
 	Timestamp      int     `json:"Timestamp"`
-	SensorG        string  `json:"SensorG"`
+	SensorG        []byte  `gorm:"type: json" json:"SensorG"`
 	MovementState  int     `json:"MovementState"`
 	Light          int     `json:"Light"`
 	BatteryLevel   int     `json:"BatteryLevel"`
@@ -50,6 +69,7 @@ type HubHistory struct {
 type A2TB struct {
 	gorm.Model
 	RecordTime   int     `gorm:"RecordTime; not null" json:"RecordTime"`
+	RepeaterID   string  `json:"RepeaterID"`
 	GatewayID    string  `gorm:"size: 20" json:"GatewayID"`
 	DeviceID     string  `json:"DeviceID"`
 	Temperature  float32 `json:"Temperature"`
@@ -68,9 +88,9 @@ type R2B2 struct {
 	GatewayID    string  `gorm:"size: 20" json:"GatewayID"`
 	DeviceID     string  `json:"DeviceID"`
 	Temperature  float32 `json:"Temperature"`
-	AsixX        float32 `json:"AsixX"`
-	AsixY        float32 `json:"AsixY"`
-	AsixZ        float32 `json:"AsixZ"`
+	AsixX        string  `json:"AsixX"`
+	AsixY        string  `json:"AsixY"`
+	AsixZ        string  `json:"AsixZ"`
 	BatteryLevel int     `json:"BatteryLevel"`
 }
 
@@ -81,8 +101,22 @@ type R2T8 struct {
 	GatewayID    string  `gorm:"size: 20" json:"GatewayID"`
 	DeviceID     string  `json:"DeviceID"`
 	Temperature  float32 `json:"Temperature"`
-	AsixX        float32 `json:"AsixX"`
-	AsixY        float32 `json:"AsixY"`
-	AsixZ        float32 `json:"AsixZ"`
+	AsixX        string  `json:"AsixX"`
+	AsixY        string  `json:"AsixY"`
+	AsixZ        string  `json:"AsixZ"`
 	BatteryLevel int     `json:"BatteryLevel"`
+}
+
+// Define DeviceList
+type DeviceList struct {
+	DeviceType string `json:"DeviceType"`
+	DeviceID   string `json:"DeviceID"`
+}
+
+// Define DeviceData
+type DeviceData struct {
+	DeviceType string `json:"DeviceType"`
+	A2TB       []A2TB `json:"A2TB"`
+	R2B2       []R2B2 `json:"R2B2"`
+	R2T8       []R2T8 `json:"R2T8"`
 }

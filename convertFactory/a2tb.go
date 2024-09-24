@@ -40,13 +40,11 @@ func ConvertA2TB(data string, RecordTime int, GatewayID string) {
 	case "6c":
 		TagStatus = "Connect"
 	case "6d":
-		TagStatus = "Open"
+		TagStatus = "Open / Tampering Cut"
 	case "6e":
 		TagStatus = "Temperature Alert"
 	case "6a":
 		TagStatus = "Pressure Alert"
-	case "aa":
-		TagStatus = "Button Alert"
 	case "ba":
 		TagStatus = "Battery Low Alert"
 	}
@@ -70,19 +68,20 @@ func ConvertA2TB(data string, RecordTime int, GatewayID string) {
 	ReserveData := data[34:36]
 
 	// Debug
-	fmt.Println("RepeaterID: ", RepeaterID)
-	fmt.Println("DeviceID: ", DeviceID)
-	fmt.Println("Temperature: ", Temperature)
-	fmt.Println("Pressure: ", Pressure)
-	fmt.Println("TagStatus: ", TagStatus)
-	fmt.Println("BatteryLevel: ", BatteryLevel)
-	fmt.Println("Timestamp: ", Timestamp)
-	fmt.Println("TXPower: ", TXPower)
-	fmt.Println("ReserveData: ", ReserveData)
+	// fmt.Println("RepeaterID: ", RepeaterID)
+	// fmt.Println("DeviceID: ", DeviceID)
+	// fmt.Println("Temperature: ", Temperature)
+	// fmt.Println("Pressure: ", Pressure)
+	// fmt.Println("TagStatus: ", TagStatus)
+	// fmt.Println("BatteryLevel: ", BatteryLevel)
+	// fmt.Println("Timestamp: ", Timestamp)
+	// fmt.Println("TXPower: ", TXPower)
+	// fmt.Println("ReserveData: ", ReserveData)
 
 	// Saving to SQL
 	a2tbStruct := db.A2TB{
 		RecordTime:   RecordTime,
+		RepeaterID:   RepeaterID,
 		GatewayID:    GatewayID,
 		DeviceID:     DeviceID,
 		Temperature:  float32(Temperature),
@@ -93,8 +92,11 @@ func ConvertA2TB(data string, RecordTime int, GatewayID string) {
 		TXPower:      int(TXPower),
 		ReserveData:  ReserveData,
 	}
+
+	tx := db.DB.Begin()
 	if err := db.CreateA2TB(&a2tbStruct); err != nil {
 		fmt.Println(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	tx.Commit()
 }

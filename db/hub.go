@@ -5,34 +5,156 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-// retrieves all hubs from the database
-func GetAllHubs() ([]Hubs, error) {
-	var hubs []Hubs
-
-	if result := DB.Preload("Records").Find(&hubs); result.Error != nil {
-		return nil, result.Error
+// create Shipment
+func CreateShipment(data *Shipment) error {
+	if result := DB.Create(data); result.Error != nil {
+		return result.Error
 	}
-	return hubs, nil
+	return nil
 }
 
-// retrieves a hub by its GatewayID
-func GetHub(gatewayID string) (*Hubs, error) {
-	var hub Hubs
+// retrieves all hubs from the database
+func GetAllHubs() ([]HubHistory, error) {
+	var histories []HubHistory
 
-	if result := DB.Preload("Records").Where("gatewayID = ?", gatewayID).First(&hub); result.Error != nil {
+	result := DB.Raw(`
+		SELECT * FROM hub_histories AS h
+		WHERE h.id IN (
+			SELECT MAX(id)
+			FROM hub_histories
+			GROUP BY gateway_id	
+		)
+	`).Scan(&histories)
+
+	if result.Error != nil {
 		return nil, result.Error
 	}
-	return &hub, nil
+
+	return histories, nil
+}
+
+// retrieves hub history by GatewayID
+func GetHubHistories(gatewayID string) ([]HubHistory, error) {
+	var history []HubHistory
+
+	if result := DB.Where("gateway_id = ?", gatewayID).Find(&history); result.Error != nil {
+		return nil, result.Error
+	}
+	return history, nil
+}
+
+// retrieves device list by its GatewayID
+func GetDeviceList(gatewayID string) ([]DeviceList, error) {
+	var a2tbDevices []A2TB
+	var r2b2Devices []R2B2
+	var r2t8Devices []R2T8
+
+	var deviceList []DeviceList
+
+	if err := DB.Raw(`
+		SELECT * FROM a2_tbs AS a
+		WHERE a.id IN (
+			SELECT MAX(id)
+			FROM a2_tbs
+			WHERE gateway_id = ?
+			GROUP BY device_id
+		)
+	`, gatewayID).Scan(&a2tbDevices).Error; err != nil {
+		return nil, err
+	}
+
+	for _, device := range a2tbDevices {
+		deviceList = append(deviceList, DeviceList{
+			DeviceType: "A2TB",
+			DeviceID:   device.DeviceID,
+		})
+	}
+
+	if err := DB.Raw(`
+		SELECT * FROM r2_b2 AS r
+		WHERE r.id IN (
+			SELECT MAX(id)
+			FROM r2_b2
+			WHERE gateway_id = ?
+			GROUP BY device_id
+		)
+	`, gatewayID).Scan(&r2b2Devices).Error; err != nil {
+		return nil, err
+	}
+
+	for _, device := range r2b2Devices {
+		deviceList = append(deviceList, DeviceList{
+			DeviceType: "R2B2",
+			DeviceID:   device.DeviceID,
+		})
+	}
+
+	if err := DB.Raw(`
+		SELECT * FROM r2_t8 AS r
+		WHERE r.id IN (
+			SELECT MAX(id)
+			FROM r2_t8
+			WHERE gateway_id = ?
+			GROUP BY device_id
+		)	
+	`, gatewayID).Scan(&r2t8Devices).Error; err != nil {
+		return nil, err
+	}
+
+	for _, device := range r2t8Devices {
+		deviceList = append(deviceList, DeviceList{
+			DeviceType: "R2T8",
+			DeviceID:   device.DeviceID,
+		})
+	}
+
+	return deviceList, nil
+}
+
+// retrieves device data by its GatewayID
+func GetDeviceData(gatewayID string, deviceType string, deviceID string) (*DeviceData, error) {
+	deviceData := &DeviceData{}
+
+	switch deviceType {
+	case "A2TB":
+		var a2tbDevices A2TB
+		if err := DB.Where("gateway_id = ? and device_id = ?", gatewayID, deviceID).
+			Order("record_time DESC").
+			Find(&a2tbDevices).Error; err != nil {
+			return nil, err
+		}
+		deviceData.DeviceType = deviceType
+		deviceData.A2TB = append(deviceData.A2TB, a2tbDevices)
+
+	case "R2B2":
+		var r2b2Devices R2B2
+		if err := DB.Where("gateway_id = ? and device_id = ?", gatewayID, deviceID).
+			Order("record_time DESC").
+			Find(&r2b2Devices).Error; err != nil {
+			return nil, err
+		}
+		deviceData.DeviceType = deviceType
+		deviceData.R2B2 = append(deviceData.R2B2, r2b2Devices)
+
+	case "R2T8":
+		var r2t8Devices R2T8
+		if err := DB.Where("gateway_id = ? and device_id = ?", gatewayID, deviceID).
+			Order("record_time DESC").
+			Find(&r2t8Devices).Error; err != nil {
+			return nil, err
+		}
+		deviceData.DeviceType = deviceType
+		deviceData.R2T8 = append(deviceData.R2T8, r2t8Devices)
+	}
+	return deviceData, nil
 }
 
 // creates a new hub in the database
 func CreateData(data *Hubs) error {
-
 	result := DB.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "gateway_id"}},
 		DoUpdates: clause.AssignmentColumns([]string{"lte_rssi", "wifi_rssi", "satellite_qty", "lng", "lat", "timestamp"}),
 	}).Create(data)
-
 	return result.Error
 }
 
@@ -54,6 +176,14 @@ func CreateA2TB(data *A2TB) error {
 
 // create R2B2
 func CreateR2B2(data *R2B2) error {
+	if result := DB.Create(data); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+// create R2T8
+func CreateR2T8(data *R2T8) error {
 	if result := DB.Create(data); result.Error != nil {
 		return result.Error
 	}
