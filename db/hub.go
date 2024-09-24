@@ -112,39 +112,39 @@ func GetDeviceList(gatewayID string) ([]DeviceList, error) {
 }
 
 // retrieves device data by its GatewayID
-func GetDeviceData(gatewayID string, deviceType string, deviceID string) (*DeviceData, error) {
-	deviceData := &DeviceData{}
+func GetDeviceData(gatewayID string, deviceType string, deviceID string) (map[string]interface{}, error) {
+	deviceData := make(map[string]interface{})
 
 	switch deviceType {
 	case "A2TB":
-		var a2tbDevices A2TB
+		var a2tbDevices []A2TB
 		if err := DB.Where("gateway_id = ? and device_id = ?", gatewayID, deviceID).
 			Order("record_time DESC").
 			Find(&a2tbDevices).Error; err != nil {
 			return nil, err
 		}
-		deviceData.DeviceType = deviceType
-		deviceData.A2TB = append(deviceData.A2TB, a2tbDevices)
+		deviceData["DeviceType"] = deviceType
+		deviceData["Data"] = a2tbDevices
 
 	case "R2B2":
-		var r2b2Devices R2B2
+		var r2b2Devices []R2B2
 		if err := DB.Where("gateway_id = ? and device_id = ?", gatewayID, deviceID).
 			Order("record_time DESC").
 			Find(&r2b2Devices).Error; err != nil {
 			return nil, err
 		}
-		deviceData.DeviceType = deviceType
-		deviceData.R2B2 = append(deviceData.R2B2, r2b2Devices)
+		deviceData["DeviceType"] = deviceType
+		deviceData["Data"] = r2b2Devices
 
 	case "R2T8":
-		var r2t8Devices R2T8
+		var r2t8Devices []R2T8
 		if err := DB.Where("gateway_id = ? and device_id = ?", gatewayID, deviceID).
 			Order("record_time DESC").
 			Find(&r2t8Devices).Error; err != nil {
 			return nil, err
 		}
-		deviceData.DeviceType = deviceType
-		deviceData.R2T8 = append(deviceData.R2T8, r2t8Devices)
+		deviceData["DeviceType"] = deviceType
+		deviceData["Data"] = r2t8Devices
 	}
 	return deviceData, nil
 }

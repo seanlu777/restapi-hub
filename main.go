@@ -39,7 +39,7 @@ func main() {
 	router.GET("/api/getHubs", getHubs)
 	router.GET("/api/getHubHistory", getHubHistory)
 	router.GET("/api/getDeviceList", getDeviceList)
-	// router.GET("/api/getDeviceData", getDeviceData)
+	router.GET("/api/getDeviceData", getDeviceData)
 	router.POST("/api/pushRecord", pushRecord)
 	router.POST("/api/createShipment", createShipment)
 
@@ -98,14 +98,28 @@ func getDeviceList(c *gin.Context) {
 }
 
 // handler function to get Device data
-// func getDeviceData(c *gin.Context) {
-// 	id := c.Query("gatewayID")
-// 	if id == "" {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error: ": "gatewayID is required"})
-// 	}
-// 	// device, err := db.GetDevice()
+func getDeviceData(c *gin.Context) {
+	gatewayID := c.Query("gatewayID")
+	if gatewayID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error: ": "gatewayID is required"})
+	}
 
-// }
+	deviceType := c.Query("deviceType")
+	if deviceType == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error: ": "deviceType is required"})
+	}
+
+	deviceID := c.Query("deviceID")
+	if deviceID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error: ": "deviceID is required"})
+	}
+
+	device, err := db.GetDeviceData(gatewayID, deviceType, deviceID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error: ": err.Error()})
+	}
+	c.JSON(http.StatusOK, device)
+}
 
 // Handler function to create a new hub and record in the database
 func pushRecord(c *gin.Context) {
