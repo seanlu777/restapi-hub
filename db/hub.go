@@ -14,8 +14,8 @@ func CreateShipment(data *Shipment) error {
 }
 
 // retrieves all hubs from the database
-func GetAllHubs() ([]HubHistory, error) {
-	var histories []HubHistory
+func GetAllGateways() ([]GatewayHistory, error) {
+	var histories []GatewayHistory
 
 	result := DB.Raw(`
 		SELECT * FROM hub_histories AS h
@@ -34,8 +34,8 @@ func GetAllHubs() ([]HubHistory, error) {
 }
 
 // retrieves hub history by GatewayID
-func GetHubHistories(gatewayID string) ([]HubHistory, error) {
-	var history []HubHistory
+func GetGatewayHistories(gatewayID string) ([]GatewayHistory, error) {
+	var history []GatewayHistory
 
 	if result := DB.Where("gateway_id = ?", gatewayID).Find(&history); result.Error != nil {
 		return nil, result.Error
@@ -150,7 +150,7 @@ func GetDeviceData(gatewayID string, deviceType string, deviceID string) (map[st
 }
 
 // creates a new hub in the database
-func CreateData(data *Hubs) error {
+func CreateData(data *Gateway) error {
 	result := DB.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "gateway_id"}},
 		DoUpdates: clause.AssignmentColumns([]string{"lte_rssi", "wifi_rssi", "satellite_qty", "lng", "lat", "timestamp"}),
@@ -159,7 +159,7 @@ func CreateData(data *Hubs) error {
 }
 
 // create hub history
-func CreateHubHistory(data *HubHistory) error {
+func CreateHubHistory(data *GatewayHistory) error {
 	if result := DB.Create(data); result.Error != nil {
 		return result.Error
 	}

@@ -18,7 +18,7 @@ func Initialize(dsn string) error {
 		return fmt.Errorf("failed to connect to db: %v", err)
 	}
 
-	err = DB.AutoMigrate(&Shipment{}, HubHistory{}, A2TB{}, R2B2{}, R2T8{})
+	err = DB.AutoMigrate(&Shipment{}, &Device{}, &GatewayHistory{}, &A2TB{}, &R2B2{}, &R2T8{})
 	if err != nil {
 		return fmt.Errorf("failed to migrate db: %v", err)
 	}

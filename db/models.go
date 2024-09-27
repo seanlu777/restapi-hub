@@ -6,26 +6,35 @@ import (
 )
 
 // Define the shipments table
-
 type Shipment struct {
 	gorm.Model
-	ShipmentID  string   `gorm:"unique; size:20; not null; index" json:"ShipmentID"`
-	CreatorName string   `json:"CreatorName"`
-	Destination []string `gorm:"type:json" json:"Destination"` // Country, City, Area, Address
-	GatewayType string   `json:"GatewayType"`
-	GatewayID   string   `json:"GatewayID"`
-	Device      []Device `json:"Device"`
+	ShipmentID  string      `gorm:"unique; size:20; not null; index" json:"ShipmentID"`
+	CreatorName string      `json:"CreatorName"`
+	Destination Destination `gorm:"type:json" json:"Destination"` // Country, City, Area, Address
+	GatewayType string      `json:"GatewayType"`
+	GatewayID   string      `json:"GatewayID"`
+	Status      string      `json:"Status"`
+	Device      []Device    `gorm:"foreignKey:ShipmentID; references:ShipmentID" json:"Device"`
+}
+
+// Define the destination struct
+type Destination struct {
+	Country string `json:"Country"`
+	City    string `json:"City"`
+	Area    string `json:"Area"`
+	Address string `json:"Address"`
 }
 
 // Define the device struct
 type Device struct {
-	ShipmentID string `gorm:"unique; size:20; not null; index" json:"ShipmentID"`
+	gorm.Model
+	ShipmentID string `gorm:"not null;" json:"ShipmentID"`
 	DeviceType string `json:"DeviceType"`
-	DeviceID   string `json:"DeviceID"`
+	DeviceID   string `gorm:"not null; unique" json:"DeviceID"` // Unique DeviceID
 }
 
 // Define the hubs
-type Hubs struct {
+type Gateway struct {
 	GatewayID      string    `json:"GatewayID"`
 	LteRssi        int       `json:"LteRssi"`
 	WifiRssi       int       `json:"WifiRssi"`
@@ -49,7 +58,7 @@ type Records struct {
 }
 
 // Define the hub history for tracking paths
-type HubHistory struct {
+type GatewayHistory struct {
 	gorm.Model
 	GatewayID      string  `gorm:"size: 20; not null; index" json:"GatewayID"`
 	LteRssi        int     `json:"LteRssi"`

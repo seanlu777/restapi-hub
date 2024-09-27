@@ -36,12 +36,13 @@ func main() {
 
 	// Define routes
 	router.GET("/api/health", apiHealth)
-	router.GET("/api/getHubs", getHubs)
-	router.GET("/api/getHubHistory", getHubHistory)
+	router.GET("/api/getGateways", getGateways)
+	router.GET("/api/getGatewayHistory", getGatewayHistory)
 	router.GET("/api/getDeviceList", getDeviceList)
 	router.GET("/api/getDeviceData", getDeviceData)
 	router.POST("/api/pushRecord", pushRecord)
 	router.POST("/api/createShipment", createShipment)
+	router.PUT("/api/updateShipment", updateShipment)
 
 	// Start the server on the port 8080
 	router.Run(":8080")
@@ -53,22 +54,22 @@ func apiHealth(c *gin.Context) {
 }
 
 // handler function to get all hubs from the database and return them as JSON response
-func getHubs(c *gin.Context) {
-	hubs, err := db.GetAllHubs()
+func getGateways(c *gin.Context) {
+	gateways, err := db.GetAllGateways()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, hubs)
+	c.JSON(http.StatusOK, gin.H{"Status": "OK", "Gateways": gateways})
 }
 
 // handler function to get a single hub by its GatewayID
-func getHubHistory(c *gin.Context) {
+func getGatewayHistory(c *gin.Context) {
 	id := c.Query("gatewayID") // Directly use the ID as a String
 	if id == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error: ": "gatewayID is required"})
 	}
-	hub, err := db.GetHubHistories(id)
+	gateway, err := db.GetGatewayHistories(id)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Invalid gatewayID"})
@@ -77,7 +78,7 @@ func getHubHistory(c *gin.Context) {
 		}
 		return
 	}
-	c.JSON(http.StatusOK, hub)
+	c.JSON(http.StatusOK, gin.H{"Status": "OK", "Gateway": gateway})
 }
 
 // handler function to get Device List
@@ -94,7 +95,7 @@ func getDeviceList(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error: ": err.Error()})
 		}
 	}
-	c.JSON(http.StatusOK, deviceList)
+	c.JSON(http.StatusOK, gin.H{"Status": "OK", "Device": deviceList})
 }
 
 // handler function to get Device data
@@ -118,12 +119,12 @@ func getDeviceData(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error: ": err.Error()})
 	}
-	c.JSON(http.StatusOK, device)
+	c.JSON(http.StatusOK, gin.H{"Status": "OK", "Device": device})
 }
 
 // Handler function to create a new hub and record in the database
 func pushRecord(c *gin.Context) {
-	var data db.Hubs
+	var data db.Gateway
 
 	if err := c.BindJSON(&data); err != nil {
 		fmt.Printf("BindJSON Error: %v\n", err)
@@ -147,11 +148,21 @@ func createShipment(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	convertFactory.SaveShipment(c, shipment)
 
-	tx := db.DB.Begin()
-	if err := db.CreateShipment(&shipment); err != nil {
-		fmt.Println(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	c.JSON(http.StatusCreated, gin.H{"Status": "Created", "Shipment": shipment})
+}
+
+// Update shipment
+func updateShipment(c *gin.Context) {
+	var shipment db.Shipment
+
+	if err := c.BindJSON(&shipment); err != nil {
+		fmt.Printf("BindJSON Error: %v\n", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	tx.Commit()
+	convertFactory.UpdateShipment(c, shipment)
+
+	c.JSON(http.StatusOK, gin.H{"Status": "Update succeeded", "Shipment": shipment})
 }
